@@ -75,15 +75,15 @@ canvas:active{cursor:grabbing}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
-const F=n=>n.toLocaleString('fr-FR').replace(/ /g,' ')+' FCFA';
+const F=n=>n.toLocaleString('fr-FR').replace(/ /g,' ')+' €';
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._);t._=setTimeout(()=>t.classList.remove('on'),2200)}
 // options du produit
-const WOOD=[{k:'iroko',n:'Iroko naturel',c:'#a8713f',p:0},{k:'ebene',n:'Ébène',c:'#2b1d16',p:45000},{k:'teck',n:'Teck huilé',c:'#7a4a26',p:20000},{k:'blanchi',n:'Bois blanchi',c:'#d6c2a3',p:10000}];
-const FAB=[{k:'wax1',n:'Wax « Œil du ciel »',wax:['#c2421d','#f2b632','#1d3b6b','#f4ead8'],p:25000},{k:'wax2',n:'Wax « Hirondelles »',wax:['#2f6b4f','#e9c46a','#2a1d14','#f4ead8'],p:25000},{k:'wax3',n:'Wax « Ndop »',wax:['#1c2f5e','#f4ead8','#1c2f5e','#9fb4d8'],p:30000},
- {k:'lin',n:'Lin sable',c:'#d9c7a7',p:0},{k:'velours',n:'Velours terracotta',c:'#a4512a',p:15000},{k:'nuit',n:'Bouclette nuit',c:'#2e3440',p:18000}];
-const BACK=[{k:'coussin',n:'Coussin',d:'dossier rembourré',p:0},{k:'rotin',n:'Rotin tressé',d:'cannage fait main',p:35000}];
-const ARM=[{k:'oui',n:'Avec accoudoirs',d:'bois massif',p:20000},{k:'non',n:'Sans accoudoirs',d:'silhouette légère',p:0}];
-const BASE=185000;let C={wood:'iroko',fab:'wax1',back:'coussin',arm:'oui'};
+const WOOD=[{k:'iroko',n:'Iroko naturel',c:'#a8713f',p:0},{k:'ebene',n:'Ébène',c:'#2b1d16',p:150},{k:'teck',n:'Teck huilé',c:'#7a4a26',p:90},{k:'blanchi',n:'Bois blanchi',c:'#d6c2a3',p:40}];
+const FAB=[{k:'wax1',n:'Wax « Œil du ciel »',wax:['#c2421d','#f2b632','#1d3b6b','#f4ead8'],p:120},{k:'wax2',n:'Wax « Hirondelles »',wax:['#2f6b4f','#e9c46a','#2a1d14','#f4ead8'],p:120},{k:'wax3',n:'Wax « Ndop »',wax:['#1c2f5e','#f4ead8','#1c2f5e','#9fb4d8'],p:140},
+ {k:'lin',n:'Lin sable',c:'#d9c7a7',p:0},{k:'velours',n:'Velours terracotta',c:'#a4512a',p:70},{k:'nuit',n:'Bouclette nuit',c:'#2e3440',p:85}];
+const BACK=[{k:'coussin',n:'Coussin',d:'dossier rembourré',p:0},{k:'rotin',n:'Rotin tressé',d:'cannage fait main',p:160}];
+const ARM=[{k:'oui',n:'Avec accoudoirs',d:'bois massif',p:90},{k:'non',n:'Sans accoudoirs',d:'silhouette légère',p:0}];
+const BASE=890;let C={wood:'iroko',fab:'wax1',back:'coussin',arm:'oui'};
 // textures générées : wax, rotin, grain du bois
 function waxTex(c){const v=document.createElement('canvas');v.width=v.height=512;const g=v.getContext('2d');g.fillStyle=c[3];g.fillRect(0,0,512,512);
  for(let y=0;y<4;y++)for(let x=0;x<4;x++){const cx=x*128+(y%2)*64+64,cy=y*128+64;
@@ -158,7 +158,7 @@ window.__opt=(k,v)=>{C[k]=v;ui();apply();labels()};
 function labels(){$('#l-wood').textContent=WOOD.find(x=>x.k===C.wood).n;$('#l-fab').textContent=FAB.find(x=>x.k===C.fab).n}
 function price(){const p=BASE+[WOOD.find(x=>x.k===C.wood),FAB.find(x=>x.k===C.fab),BACK.find(x=>x.k===C.back),ARM.find(x=>x.k===C.arm)].reduce((a,o)=>a+o.p,0);
  const el=$('#price');el.textContent=F(p);el.classList.remove('flash');void el.offsetWidth;el.classList.add('flash');
- const rc=`${WOOD.find(x=>x.k===C.wood).n} · ${FAB.find(x=>x.k===C.fab).n} · dossier ${BACK.find(x=>x.k===C.back).n.toLowerCase()} · ${ARM.find(x=>x.k===C.arm).n.toLowerCase()}`;$('#recap').textContent=rc+' · livraison à Douala et Yaoundé incluse';
+ const rc=`${WOOD.find(x=>x.k===C.wood).n} · ${FAB.find(x=>x.k===C.fab).n} · dossier ${BACK.find(x=>x.k===C.back).n.toLowerCase()} · ${ARM.find(x=>x.k===C.arm).n.toLowerCase()}`;$('#recap').textContent=rc+' · livraison offerte en France métropolitaine';
  $('#order').href='https://wa.me/?text='+encodeURIComponent(`Bonjour Ébène & Rotin, je souhaite commander le fauteuil Ngondo : ${rc}. Prix affiché : ${F(p)}.`)}
 $('#shot').onclick=()=>{const a=document.createElement('a');a.download='fauteuil-ngondo.png';a.href=cv.toDataURL('image/png');a.click();toast('Image enregistrée')};
 ui();labels();resize();apply();requestAnimationFrame(loop);setTimeout(()=>$('#load').style.opacity=0,300);
