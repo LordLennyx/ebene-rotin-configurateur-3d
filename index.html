@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ébène & Rotin — configurateur 3D</title>
+<meta name="description" content="Configurateur 3D d'un fauteuil artisanal : bois, tissu wax, dossier en rotin, accoudoirs, prix en direct, capture et commande. Rendu WebGL dans le navigateur.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='16' fill='%23332218'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-family='Georgia' font-size='16' fill='%23f1e6d6'%3E%26amp;%3C/text%3E%3C/svg%3E">
+<style>
+:root{--bg:#efe8dd;--paper:#f8f4ec;--ink:#2a1d14;--mute:#85776a;--line:#ddd2c2;--acc:#a4512a}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--ink);font:400 14px/1.5 'Manrope',system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden}
+button{font:inherit;color:inherit;cursor:pointer}
+.serif{font-family:'Cormorant Garamond',Georgia,serif}
+.app{display:grid;grid-template-columns:1fr 400px;height:100vh}
+.stage{position:relative;background:radial-gradient(ellipse at 50% 40%,#f7f1e7 0,#e6dccd 70%)}
+canvas{display:block;width:100%;height:100%;cursor:grab;touch-action:none}
+canvas:active{cursor:grabbing}
+.brand{position:absolute;left:28px;top:22px;font:600 24px 'Cormorant Garamond';letter-spacing:.01em}
+.brand i{color:var(--acc)}
+.brand small{display:block;font:500 11px 'Manrope';letter-spacing:.18em;text-transform:uppercase;color:var(--mute)}
+.views{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);display:flex;gap:6px;background:#fffaf2cc;backdrop-filter:blur(8px);border-radius:100px;padding:5px;border:1px solid var(--line)}
+.views button{border:0;background:none;border-radius:100px;padding:7px 14px;font-weight:600;font-size:12.5px;color:var(--mute)}
+.views button:hover,.views button.on{background:var(--ink);color:#fff}
+.hint{position:absolute;right:24px;top:26px;color:var(--mute);font-size:12px;text-align:right}
+.load{position:absolute;inset:0;display:grid;place-items:center;color:var(--mute);font-family:'Cormorant Garamond';font-size:22px;font-style:italic;pointer-events:none;transition:opacity .5s}
+.panel{background:var(--paper);border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+.ph{padding:26px 26px 14px;border-bottom:1px solid var(--line)}
+.ph h1{font:500 36px/1 'Cormorant Garamond'}
+.ph p{color:var(--mute);margin-top:6px}
+.opts{overflow-y:auto;padding:6px 26px 20px;flex:1}
+.grp{padding:16px 0;border-bottom:1px solid var(--line)}
+.grp h3{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);font-weight:600;display:flex;justify-content:space-between;margin-bottom:10px}
+.grp h3 b{color:var(--ink);letter-spacing:0;text-transform:none;font-size:13px}
+.sw{display:flex;gap:10px;flex-wrap:wrap}
+.sw button{width:46px;height:46px;border-radius:50%;border:2px solid transparent;padding:3px;background:none;transition:transform .15s}
+.sw button:hover{transform:scale(1.07)}
+.sw button.on{border-color:var(--ink)}
+.sw button i{display:block;width:100%;height:100%;border-radius:50%;background-size:cover;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.seg{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.seg button{border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:10px;text-align:left}
+.seg button.on{border-color:var(--ink)}
+.seg small{display:block;color:var(--mute);font-size:12px}
+.foot{padding:18px 26px 22px;border-top:1px solid var(--line);background:#fffaf2}
+.price{display:flex;justify-content:space-between;align-items:baseline}
+.price b{font:600 34px 'Cormorant Garamond'}
+.price small{color:var(--mute)}
+.recap{color:var(--mute);font-size:12.5px;margin:4px 0 12px}
+.acts{display:flex;gap:8px}
+.btn{border:1.5px solid var(--ink);background:none;border-radius:12px;padding:13px 16px;font-weight:700}
+.btn.p{background:var(--ink);color:#fff;flex:1;text-align:center;text-decoration:none}
+.flash{animation:fl .5s}
+@keyframes fl{from{color:var(--acc)}}
+.toast{position:fixed;left:calc(50% - 200px);top:22px;transform:translate(-50%,-10px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:10px;opacity:0;transition:.3s;z-index:20;font-weight:600}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+@media (max-width:900px){body{overflow:auto}.app{grid-template-columns:1fr;height:auto}.stage{height:56vh;min-height:360px}.panel{border-left:0}.opts{overflow:visible}.hint{display:none}.brand{left:16px;top:14px}.ph{padding:20px 16px 10px}.opts,.foot{padding-left:16px;padding-right:16px}.toast{left:50%}}
+</style>
+</head>
+<body>
+<div class="app">
+ <div class="stage" id="stage"><canvas id="cv"></canvas><div class="load" id="load">Atelier en préparation…</div>
+  <div class="brand">Ébène <i>&amp;</i> Rotin<small>Mobilier artisanal · Foumban</small></div>
+  <div class="hint">Faites glisser pour tourner<br>Molette ou pincement pour zoomer</div>
+  <div class="views"><button data-cam="face">Face</button><button data-cam="trois" class="on">Trois quarts</button><button data-cam="profil">Profil</button><button data-cam="haut">Dessus</button><button id="spin">Rotation</button></div></div>
+ <aside class="panel">
+  <div class="ph"><h1>Fauteuil Ngondo</h1><p>Assise profonde, bois massif tourné à la main, tissu wax ou uni. Fabriqué sur commande en 3 semaines.</p></div>
+  <div class="opts" id="opts"></div>
+  <div class="foot"><div class="price"><span class="serif" style="font-size:18px">Votre fauteuil</span><b id="price">—</b></div><div class="recap" id="recap"></div>
+   <div class="acts"><button class="btn" id="shot" title="Enregistrer une image">Capture</button><a class="btn p" id="order" target="_blank" rel="noopener">Commander sur WhatsApp</a></div></div>
+ </aside>
+</div>
+<div class="toast" id="toast"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const F=n=>n.toLocaleString('fr-FR').replace(/ /g,' ')+' FCFA';
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._);t._=setTimeout(()=>t.classList.remove('on'),2200)}
+// options du produit
+const WOOD=[{k:'iroko',n:'Iroko naturel',c:'#a8713f',p:0},{k:'ebene',n:'Ébène',c:'#2b1d16',p:45000},{k:'teck',n:'Teck huilé',c:'#7a4a26',p:20000},{k:'blanchi',n:'Bois blanchi',c:'#d6c2a3',p:10000}];
+const FAB=[{k:'wax1',n:'Wax « Œil du ciel »',wax:['#c2421d','#f2b632','#1d3b6b','#f4ead8'],p:25000},{k:'wax2',n:'Wax « Hirondelles »',wax:['#2f6b4f','#e9c46a','#2a1d14','#f4ead8'],p:25000},{k:'wax3',n:'Wax « Ndop »',wax:['#1c2f5e','#f4ead8','#1c2f5e','#9fb4d8'],p:30000},
+ {k:'lin',n:'Lin sable',c:'#d9c7a7',p:0},{k:'velours',n:'Velours terracotta',c:'#a4512a',p:15000},{k:'nuit',n:'Bouclette nuit',c:'#2e3440',p:18000}];
+const BACK=[{k:'coussin',n:'Coussin',d:'dossier rembourré',p:0},{k:'rotin',n:'Rotin tressé',d:'cannage fait main',p:35000}];
+const ARM=[{k:'oui',n:'Avec accoudoirs',d:'bois massif',p:20000},{k:'non',n:'Sans accoudoirs',d:'silhouette légère',p:0}];
+const BASE=185000;let C={wood:'iroko',fab:'wax1',back:'coussin',arm:'oui'};
+// textures générées : wax, rotin, grain du bois
+function waxTex(c){const v=document.createElement('canvas');v.width=v.height=512;const g=v.getContext('2d');g.fillStyle=c[3];g.fillRect(0,0,512,512);
+ for(let y=0;y<4;y++)for(let x=0;x<4;x++){const cx=x*128+(y%2)*64+64,cy=y*128+64;
+  g.fillStyle=c[0];g.beginPath();g.arc(cx,cy,52,0,7);g.fill();g.fillStyle=c[1];g.beginPath();g.arc(cx,cy,38,0,7);g.fill();g.fillStyle=c[2];g.beginPath();g.arc(cx,cy,24,0,7);g.fill();
+  g.strokeStyle=c[3];g.lineWidth=4;for(let k=0;k<12;k++){const a=k/12*6.283;g.beginPath();g.moveTo(cx+Math.cos(a)*26,cy+Math.sin(a)*26);g.lineTo(cx+Math.cos(a)*50,cy+Math.sin(a)*50);g.stroke()}
+  g.fillStyle=c[3];g.beginPath();g.arc(cx,cy,8,0,7);g.fill();
+  g.fillStyle=c[2];[[64,0],[0,64]].forEach(([dx,dy])=>{g.beginPath();g.arc(cx+dx,cy+dy-64+(dy?0:64),9,0,7);g.fill()})}
+ const t=new THREE.CanvasTexture(v);t.encoding=THREE.sRGBEncoding;t.anisotropy=8;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(1.4,1.4);return t}
+function weaveTex(){const v=document.createElement('canvas');v.width=v.height=256;const g=v.getContext('2d');g.fillStyle='#2a1d14';g.fillRect(0,0,256,256);
+ for(let i=0;i<8;i++)for(let j=0;j<8;j++){const x=i*32,y=j*32;g.fillStyle=(i+j)%2?'#d9b77e':'#c9a265';g.beginPath();g.ellipse(x+16,y+16,13,5,(i+j)%2?0:Math.PI/2,0,7);g.fill()}
+ for(let i=0;i<8;i++){g.fillStyle='#e5c891';g.beginPath();g.arc(i*32,i*32%256,3,0,7);g.fill()}
+ const t=new THREE.CanvasTexture(v);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.encoding=THREE.sRGBEncoding;t.repeat.set(3,3);return t}
+function grainTex(){const v=document.createElement('canvas');v.width=64;v.height=512;const g=v.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,64,512);
+ for(let i=0;i<70;i++){g.strokeStyle=`rgba(0,0,0,${.04+Math.random()*.08})`;g.lineWidth=1+Math.random()*2;g.beginPath();let x=Math.random()*64;g.moveTo(x,0);for(let y=0;y<512;y+=16){x+=(Math.random()-.5)*3;g.lineTo(x,y)}g.stroke()}
+ const t=new THREE.CanvasTexture(v);t.wrapS=t.wrapT=THREE.RepeatWrapping;return t}
+// scène
+const cv=$('#cv'),R=new THREE.WebGLRenderer({canvas:cv,antialias:true,preserveDrawingBuffer:true,alpha:true});R.setPixelRatio(Math.min(devicePixelRatio,2));R.shadowMap.enabled=true;R.shadowMap.type=THREE.PCFSoftShadowMap;R.outputEncoding=THREE.sRGBEncoding;
+const S=new THREE.Scene();const cam=new THREE.PerspectiveCamera(32,1,.1,100);
+S.add(new THREE.HemisphereLight(0xfff6e8,0x8a7560,.75));
+const sun=new THREE.DirectionalLight(0xffffff,.85);sun.position.set(3,6,4);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-2;sun.shadow.camera.right=2;sun.shadow.camera.top=2;sun.shadow.camera.bottom=-2;sun.shadow.radius=6;S.add(sun);
+const fill=new THREE.DirectionalLight(0xffe2c4,.35);fill.position.set(-4,2,-2);S.add(fill);
+const ground=new THREE.Mesh(new THREE.CircleGeometry(3,64),new THREE.ShadowMaterial({opacity:.22}));ground.rotation.x=-Math.PI/2;ground.receiveShadow=true;S.add(ground);
+const grain=grainTex(),weave=weaveTex();
+const M={wood:new THREE.MeshStandardMaterial({color:0xa8713f,roughness:.55,map:grain}),fab:new THREE.MeshStandardMaterial({color:0xffffff,roughness:.9}),rot:new THREE.MeshStandardMaterial({map:weave,roughness:.8,transparent:false})};
+const chair=new THREE.Group();S.add(chair);
+function rounded(w,d,h,r,bev){const s=new THREE.Shape();s.moveTo(-w/2+r,-d/2);s.lineTo(w/2-r,-d/2);s.quadraticCurveTo(w/2,-d/2,w/2,-d/2+r);s.lineTo(w/2,d/2-r);s.quadraticCurveTo(w/2,d/2,w/2-r,d/2);s.lineTo(-w/2+r,d/2);s.quadraticCurveTo(-w/2,d/2,-w/2,d/2-r);s.lineTo(-w/2,-d/2+r);s.quadraticCurveTo(-w/2,-d/2,-w/2+r,-d/2);
+ const g=new THREE.ExtrudeGeometry(s,{depth:h-bev*2,bevelEnabled:true,bevelThickness:bev,bevelSize:bev,bevelSegments:6,curveSegments:10});g.rotateX(-Math.PI/2);g.translate(0,bev,0);
+ // UV planaires pour le motif
+ const p=g.attributes.position,uv=g.attributes.uv;for(let i=0;i<p.count;i++)uv.setXY(i,p.getX(i)*1.2+.5,p.getZ(i)*1.2+.5);return g}
+const mesh=(g,m)=>{const o=new THREE.Mesh(g,m);o.castShadow=true;o.receiveShadow=true;return o};
+function build(){while(chair.children.length)chair.remove(chair.children[0]);
+ const W=.78,D=.74;
+ // pieds fuselés légèrement inclinés
+ [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([x,z])=>{const l=mesh(new THREE.CylinderGeometry(.026,.017,.36,20),M.wood);l.position.set(x*(W/2-.06),.18,z*(D/2-.07));l.rotation.z=x*.08;l.rotation.x=-z*.08;chair.add(l)});
+ const fr=mesh(rounded(W,D,.05,.05,.012),M.wood);fr.position.y=.34;chair.add(fr);
+ const seat=mesh(rounded(W-.06,D-.04,.13,.09,.045),M.fab);seat.position.set(0,.385,.02);chair.add(seat);
+ // dossier
+ const bk=new THREE.Group();bk.position.set(0,.4,-D/2+.04);bk.rotation.x=-.2;chair.add(bk);
+ [-1,1].forEach(x=>{const p=mesh(new THREE.BoxGeometry(.045,.62,.045),M.wood);p.position.set(x*(W/2-.04),.31,0);bk.add(p)});
+ const top=mesh(new THREE.CylinderGeometry(.028,.028,W-.02,24),M.wood);top.rotation.z=Math.PI/2;top.position.set(0,.62,0);bk.add(top);
+ if(C.back==='rotin'){const pnl=mesh(new THREE.BoxGeometry(W-.12,.5,.014),M.rot);pnl.position.set(0,.33,0);bk.add(pnl);const pc=mesh(rounded(W-.16,.07,.3,.03,.03),M.fab);pc.rotation.x=Math.PI/2;pc.position.set(0,.2,.09);bk.add(pc)}
+ else{const c=mesh(rounded(W-.1,.5,.14,.08,.05),M.fab);c.rotation.x=Math.PI/2;c.position.set(0,.34,.03);bk.add(c)}
+ if(C.arm==='oui')[-1,1].forEach(x=>{const a=mesh(rounded(.07,D-.04,.035,.03,.012),M.wood);a.position.set(x*(W/2+.005),.6,.0);chair.add(a);
+  const s=mesh(new THREE.CylinderGeometry(.02,.02,.26,16),M.wood);s.position.set(x*(W/2+.005),.47,D/2-.12);chair.add(s)});
+ chair.position.y=0}
+function apply(){const w=WOOD.find(x=>x.k===C.wood),f=FAB.find(x=>x.k===C.fab);M.wood.color.set(w.c).convertSRGBToLinear();
+ if(f.wax){if(M.fab.map)M.fab.map.dispose();M.fab.map=waxTex(f.wax);M.fab.color.set('#ffffff')}else{M.fab.map=null;M.fab.color.set(f.c).convertSRGBToLinear()}M.fab.needsUpdate=true;build();price()}
+// caméra orbitale maison
+let th=.75,ph=1.18,rad=3.6,tgt=new THREE.Vector3(0,.42,0),aim=null,spin=false;
+function placeCam(){cam.position.set(tgt.x+rad*Math.sin(ph)*Math.sin(th),tgt.y+rad*Math.cos(ph),tgt.z+rad*Math.sin(ph)*Math.cos(th));cam.lookAt(tgt)}
+let drag=null,pinch=null;const pts=new Map();
+cv.addEventListener('pointerdown',e=>{pts.set(e.pointerId,e);cv.setPointerCapture(e.pointerId);aim=null;spin=false;$('#spin').classList.remove('on');drag={x:e.clientX,y:e.clientY}});
+cv.addEventListener('pointermove',e=>{if(!pts.has(e.pointerId))return;pts.set(e.pointerId,e);if(pts.size===2){const [a,b]=[...pts.values()],d=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);if(pinch)rad=Math.min(6,Math.max(2,rad*pinch/d));pinch=d;return}
+ if(!drag)return;th-=(e.clientX-drag.x)*.008;ph=Math.min(1.5,Math.max(.25,ph-(e.clientY-drag.y)*.006));drag={x:e.clientX,y:e.clientY}});
+const up=e=>{pts.delete(e.pointerId);pinch=null;if(!pts.size)drag=null};cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
+cv.addEventListener('wheel',e=>{e.preventDefault();rad=Math.min(6,Math.max(2,rad*(1+e.deltaY*.001)))},{passive:false});
+const CAMS={face:[0,1.3,3.4],trois:[.75,1.18,3.6],profil:[Math.PI/2,1.25,3.5],haut:[.3,.35,3.8]};
+$$('[data-cam]').forEach(b=>b.onclick=()=>{const c=CAMS[b.dataset.cam];aim={th:c[0]+Math.round((th-c[0])/(2*Math.PI))*2*Math.PI,ph:c[1],rad:c[2]};spin=false;$$('.views button').forEach(x=>x.classList.toggle('on',x===b))});
+$('#spin').onclick=()=>{spin=!spin;aim=null;$$('.views button').forEach(x=>x.classList.remove('on'));$('#spin').classList.toggle('on',spin)};
+window.__cam=k=>$(`[data-cam="${k}"]`).click();window.__spin=v=>{spin=v};
+function resize(){const r=$('#stage').getBoundingClientRect();R.setSize(r.width,r.height,false);cam.aspect=r.width/r.height;cam.updateProjectionMatrix()}
+addEventListener('resize',resize);
+let tPrev=performance.now();
+function loop(t){const dt=Math.min(.05,(t-tPrev)/1000);tPrev=t;if(spin)th+=dt*.5;if(aim){th+=(aim.th-th)*.08;ph+=(aim.ph-ph)*.08;rad+=(aim.rad-rad)*.08;if(Math.abs(aim.th-th)<.001)aim=null}
+ placeCam();R.render(S,cam);requestAnimationFrame(loop)}
+// interface
+function sw(list,key,label){return `<div class="grp"><h3>${label}<b id="l-${key}"></b></h3><div class="sw">${list.map(o=>`<button data-k="${key}" data-v="${o.k}" class="${C[key]===o.k?'on':''}" title="${o.n}" aria-label="${o.n}"><i style="${o.wax?`background:radial-gradient(circle,${o.wax[2]} 0 22%,${o.wax[1]} 23% 45%,${o.wax[0]} 46% 70%,${o.wax[3]} 71%)`:`background:${o.c}`}"></i></button>`).join('')}</div></div>`}
+function seg(list,key,label){return `<div class="grp"><h3>${label}</h3><div class="seg">${list.map(o=>`<button data-k="${key}" data-v="${o.k}" class="${C[key]===o.k?'on':''}"><b>${o.n}</b><small>${o.d}${o.p?' · + '+F(o.p):''}</small></button>`).join('')}</div></div>`}
+function ui(){$('#opts').innerHTML=sw(WOOD,'wood','Essence de bois')+sw(FAB,'fab','Tissu')+seg(BACK,'back','Dossier')+seg(ARM,'arm','Accoudoirs')+`<div class="grp" style="border:0"><h3>Dimensions</h3><p style="color:var(--mute)">L ${C.arm==='oui'?'82':'78'} × P 74 × H 92 cm · assise à 45 cm · poids ${C.wood==='ebene'?'16':'13'} kg</p></div>`}
+$('#opts').onclick=e=>{const b=e.target.closest('[data-k]');if(!b)return;C[b.dataset.k]=b.dataset.v;ui();apply();labels()};
+window.__opt=(k,v)=>{C[k]=v;ui();apply();labels()};
+function labels(){$('#l-wood').textContent=WOOD.find(x=>x.k===C.wood).n;$('#l-fab').textContent=FAB.find(x=>x.k===C.fab).n}
+function price(){const p=BASE+[WOOD.find(x=>x.k===C.wood),FAB.find(x=>x.k===C.fab),BACK.find(x=>x.k===C.back),ARM.find(x=>x.k===C.arm)].reduce((a,o)=>a+o.p,0);
+ const el=$('#price');el.textContent=F(p);el.classList.remove('flash');void el.offsetWidth;el.classList.add('flash');
+ const rc=`${WOOD.find(x=>x.k===C.wood).n} · ${FAB.find(x=>x.k===C.fab).n} · dossier ${BACK.find(x=>x.k===C.back).n.toLowerCase()} · ${ARM.find(x=>x.k===C.arm).n.toLowerCase()}`;$('#recap').textContent=rc+' · livraison à Douala et Yaoundé incluse';
+ $('#order').href='https://wa.me/?text='+encodeURIComponent(`Bonjour Ébène & Rotin, je souhaite commander le fauteuil Ngondo : ${rc}. Prix affiché : ${F(p)}.`)}
+$('#shot').onclick=()=>{const a=document.createElement('a');a.download='fauteuil-ngondo.png';a.href=cv.toDataURL('image/png');a.click();toast('Image enregistrée')};
+ui();labels();resize();apply();requestAnimationFrame(loop);setTimeout(()=>$('#load').style.opacity=0,300);
+</script>
+</body>
+</html>

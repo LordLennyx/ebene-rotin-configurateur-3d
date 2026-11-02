@@ -1,0 +1,72 @@
+{
+ "titre": "<em>Ébène &amp; Rotin</em>, configurateur 3D",
+ "type": "Configurateur produit 3D · WebGL",
+ "sous_titre": "Bois, tissu wax, rotin, accoudoirs, prix en direct, capture et commande",
+ "couleur": "#2a1d14",
+ "graine": 30,
+ "voix": [
+  [
+   3.3,
+   "Un configurateur 3D pour vendre du mobilier sur mesure,"
+  ],
+  [
+   7.8,
+   "le client tourne autour du fauteuil, choisit le bois, le tissu wax, le dossier en rotin,"
+  ],
+  [
+   16.4,
+   "le prix suit chaque choix, et la commande part sur WhatsApp."
+  ]
+ ],
+ "etapes": [
+  {
+   "t": "wait",
+   "ms": 1200
+  },
+  {
+   "t": "eval",
+   "js": "window.__spin(true)",
+   "pause": 2020
+  },
+  {
+   "t": "eval",
+   "js": "window.__opt('wood','ebene')",
+   "pause": 1920
+  },
+  {
+   "t": "eval",
+   "js": "window.__opt('fab','wax2')",
+   "pause": 2020
+  },
+  {
+   "t": "eval",
+   "js": "window.__opt('back','rotin')",
+   "pause": 2420
+  },
+  {
+   "t": "eval",
+   "js": "window.__opt('fab','velours')",
+   "pause": 1920
+  },
+  {
+   "t": "eval",
+   "js": "window.__opt('wood','blanchi')",
+   "pause": 1820
+  },
+  {
+   "t": "eval",
+   "js": "window.__opt('arm','non')",
+   "pause": 1820
+  },
+  {
+   "t": "eval",
+   "js": "window.__cam('face')",
+   "pause": 2020
+  },
+  {
+   "t": "eval",
+   "js": "window.__opt('fab','wax3')",
+   "pause": 2420
+  }
+ ]
+}
